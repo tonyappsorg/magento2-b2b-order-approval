@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Checkout\Block\Onepage\Link">
+        <plugin name="tonyapps_b2b_order_approval_checkout_link" type="Tonyapps\B2bOrderApproval\Plugin\CheckoutLinkPlugin" sortOrder="10"/>
+    </type>
+</config>

@@ -1,0 +1,19 @@
+<?php
+/** @var \Tonyapps\B2bOrderApproval\Block\Cart\RequestApproval $block */
+/** @var \Magento\Framework\Escaper $escaper */
+?>
+<?php if ($block->canSubmit()): ?>
+    <div class="b2b-order-approval-request">
+        <p><?= $escaper->escapeHtml(__('This order needs approval from your company administrator before checkout.')) ?></p>
+        <form action="<?= $escaper->escapeUrl($block->getSubmitUrl()) ?>" method="post">
+            <?= $block->getBlockHtml('formkey') ?>
+            <button type="submit" class="action primary">
+                <span><?= $escaper->escapeHtml(__('Request Order Approval')) ?></span>
+            </button>
+        </form>
+    </div>
+<?php elseif ($block->hasApprovedRequest()): ?>
+    <div class="message success">
+        <span><?= $escaper->escapeHtml(__('Your order is approved. You can continue to checkout.')) ?></span>
+    </div>
+<?php endif; ?>

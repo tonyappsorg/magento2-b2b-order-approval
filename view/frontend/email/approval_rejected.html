@@ -1,0 +1,11 @@
+<!--@subject {{trans "Your company order request was declined"}} @-->
+<!--@vars {
+"var buyer_name":"Buyer name",
+"var request_id":"Approval request ID",
+"var comment":"Rejection comment",
+"var checkout_url":"Cart URL"
+} @-->
+<p>{{trans "Hello %name," name=$buyer_name}}</p>
+<p>{{trans "Your company order request #%id was declined." id=$request_id}}</p>
+<p>{{var comment}}</p>
+<p><a href="{{var checkout_url}}">{{trans "Review your cart"}}</a></p>

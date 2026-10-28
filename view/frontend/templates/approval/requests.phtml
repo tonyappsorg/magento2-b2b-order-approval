@@ -1,0 +1,60 @@
+<?php
+/** @var \Tonyapps\B2bOrderApproval\Block\Approval\Requests $block */
+/** @var \Magento\Framework\Escaper $escaper */
+$requests = $block->getRequests();
+?>
+<div class="b2b-order-approval-requests">
+    <p><?= $escaper->escapeHtml(__('Review requests from members of your company. Approving a request lets the buyer complete checkout; it does not place or pay for the order.')) ?></p>
+    <?php if ($requests): ?>
+        <table class="data table">
+            <thead><tr>
+                <th><?= $escaper->escapeHtml(__('Request')) ?></th>
+                <th><?= $escaper->escapeHtml(__('Buyer')) ?></th>
+                <th><?= $escaper->escapeHtml(__('Base Subtotal')) ?></th>
+                <th><?= $escaper->escapeHtml(__('Status')) ?></th>
+                <th><?= $escaper->escapeHtml(__('Submitted')) ?></th>
+                <th><?= $escaper->escapeHtml(__('Actions')) ?></th>
+            </tr></thead>
+            <tbody>
+            <?php foreach ($requests as $row): ?>
+                <tr>
+                    <td><?= (int)$row['entity_id'] ?></td>
+                    <td><?= $escaper->escapeHtml($row['requester_name'] ?: $row['requester_email']) ?><br><?= $escaper->escapeHtml($row['requester_email']) ?></td>
+                    <td><?= $escaper->escapeHtml((string)$row['base_subtotal']) ?></td>
+                    <td><?= $escaper->escapeHtml(ucfirst((string)$row['status'])) ?></td>
+                    <td><?= $escaper->escapeHtml((string)$row['created_at']) ?></td>
+                    <td>
+                        <details>
+                            <summary><?= $escaper->escapeHtml(__('View items')) ?></summary>
+                            <ul>
+                                <?php foreach ($block->getItems($row) as $item): ?>
+                                    <li><?= $escaper->escapeHtml((string)$item['name']) ?> (<?= $escaper->escapeHtml((string)$item['sku']) ?>), <?= $escaper->escapeHtml(__('Qty: %1', (string)$item['qty'])) ?>, <?= $escaper->escapeHtml(__('Line total: %1', (string)$item['row_total'])) ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </details>
+                        <?php if ($row['status'] === \Tonyapps\B2bOrderApproval\Model\ResourceModel\ApprovalRequest::PENDING): ?>
+                            <form action="<?= $escaper->escapeUrl($block->getApproveUrl()) ?>" method="post" style="display:inline">
+                                <?= $block->getBlockHtml('formkey') ?>
+                                <input type="hidden" name="request_id" value="<?= (int)$row['entity_id'] ?>"/>
+                                <button type="submit" class="action primary"><span><?= $escaper->escapeHtml(__('Approve')) ?></span></button>
+                            </form>
+                            <form action="<?= $escaper->escapeUrl($block->getRejectUrl()) ?>" method="post" style="display:inline">
+                                <?= $block->getBlockHtml('formkey') ?>
+                                <input type="hidden" name="request_id" value="<?= (int)$row['entity_id'] ?>"/>
+                                <input type="text" name="comment" maxlength="2000" aria-label="<?= $escaper->escapeHtmlAttr(__('Reason for rejection')) ?>" placeholder="<?= $escaper->escapeHtmlAttr(__('Optional reason')) ?>"/>
+                                <button type="submit" class="action secondary"><span><?= $escaper->escapeHtml(__('Reject')) ?></span></button>
+                            </form>
+                        <?php elseif ($row['status'] === \Tonyapps\B2bOrderApproval\Model\ResourceModel\ApprovalRequest::REJECTED && $row['comment']): ?>
+                            <?= $escaper->escapeHtml($row['comment']) ?>
+                        <?php elseif ($row['order_id']): ?>
+                            <?= $escaper->escapeHtml(__('Order #%1', (int)$row['order_id'])) ?>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php else: ?>
+        <div class="message info"><span><?= $escaper->escapeHtml(__('There are no order approval requests.')) ?></span></div>
+    <?php endif; ?>
+</div>

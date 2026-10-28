@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="tonyapps_b2b_order_approval" resource="default" engine="innodb" comment="B2B Order Approval Requests">
+        <column xsi:type="int" name="entity_id" unsigned="true" nullable="false" identity="true" comment="Entity ID"/>
+        <column xsi:type="int" name="quote_id" unsigned="true" nullable="false" comment="Quote ID"/>
+        <column xsi:type="smallint" name="store_id" unsigned="true" nullable="false" comment="Store ID"/>
+        <column xsi:type="int" name="company_id" unsigned="true" nullable="false" comment="Company ID"/>
+        <column xsi:type="int" name="customer_id" unsigned="true" nullable="false" comment="Requester Customer ID"/>
+        <column xsi:type="varchar" name="requester_name" nullable="false" length="255" comment="Requester Name"/>
+        <column xsi:type="varchar" name="requester_email" nullable="false" length="255" comment="Requester Email"/>
+        <column xsi:type="decimal" name="base_subtotal" precision="20" scale="4" unsigned="false" nullable="false" default="0.0000" comment="Requested Base Subtotal"/>
+        <column xsi:type="varchar" name="cart_hash" nullable="false" length="64" comment="Approved Cart Fingerprint"/>
+        <column xsi:type="text" name="cart_snapshot" nullable="false" comment="Requested Cart Contents"/>
+        <column xsi:type="varchar" name="status" nullable="false" length="16" default="pending" comment="Request Status"/>
+        <column xsi:type="int" name="approver_customer_id" unsigned="true" nullable="true" comment="Approver Customer ID"/>
+        <column xsi:type="int" name="order_id" unsigned="true" nullable="true" comment="Placed Order ID"/>
+        <column xsi:type="text" name="comment" nullable="true" comment="Approval Comment"/>
+        <column xsi:type="timestamp" name="created_at" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="true" comment="Updated At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY"><column name="entity_id"/></constraint>
+        <index referenceId="TONYAPPS_B2B_ORDER_APPROVAL_QUOTE_STATUS" indexType="btree">
+            <column name="quote_id"/><column name="status"/>
+        </index>
+        <index referenceId="TONYAPPS_B2B_ORDER_APPROVAL_COMPANY_STATUS" indexType="btree">
+            <column name="company_id"/><column name="status"/>
+        </index>
+    </table>
+</schema>

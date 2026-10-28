@@ -1,0 +1,11 @@
+<!--@subject {{trans "Order approval requested for %company_name" company_name=$company_name}} @-->
+<!--@vars {
+"var company_name":"Company name",
+"var buyer_name":"Buyer name",
+"var request_id":"Approval request ID",
+"var approval_url":"Approval queue URL"
+} @-->
+<p>{{trans "Hello %name," name=$buyer_name}}</p>
+<p>{{trans "A buyer has requested approval for an order for %company." company=$company_name}}</p>
+<p>{{trans "Request #%id" id=$request_id}}</p>
+<p><a href="{{var approval_url}}">{{trans "Review order request"}}</a></p>

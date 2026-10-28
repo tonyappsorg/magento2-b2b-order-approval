@@ -1,0 +1,27 @@
+{
+  "tonyapps_b2b_order_approval": {
+    "column": {
+      "entity_id": true,
+      "quote_id": true,
+      "store_id": true,
+      "company_id": true,
+      "customer_id": true,
+      "requester_name": true,
+      "requester_email": true,
+      "base_subtotal": true,
+      "cart_hash": true,
+      "cart_snapshot": true,
+      "status": true,
+      "approver_customer_id": true,
+      "order_id": true,
+      "comment": true,
+      "created_at": true,
+      "updated_at": true
+    },
+    "index": {
+      "TONYAPPS_B2B_ORDER_APPROVAL_QUOTE_STATUS": true,
+      "TONYAPPS_B2B_ORDER_APPROVAL_COMPANY_STATUS": true
+    },
+    "constraint": {"PRIMARY": true}
+  }
+}
