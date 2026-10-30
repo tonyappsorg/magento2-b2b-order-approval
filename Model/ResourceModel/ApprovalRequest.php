@@ -65,7 +65,6 @@ class ApprovalRequest extends AbstractDb
     {
         $select = $this->getConnection()->select()->from($this->getMainTable())
             ->where('company_id = ?', $companyId)
-            ->where('status IN (?)', [self::PENDING, self::APPROVED, self::REJECTED, self::ORDERED])
             ->order('entity_id DESC')->limit($limit);
         return $this->getConnection()->fetchAll($select);
     }

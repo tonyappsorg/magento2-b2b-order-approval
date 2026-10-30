@@ -53,7 +53,10 @@ class Notifier
     {
         try {
             $row = $this->requests->getById($requestId);
-            $this->notifyBuyer($requestId, 'tonyapps_b2borderapproval_approved', [
+            if (!$row) {
+                return;
+            }
+            $this->notifyBuyer($row, 'tonyapps_b2borderapproval_approved', [
                 'checkout_url' => $this->storeManager->getStore((int)($row['store_id'] ?? 0))->getUrl('checkout/cart'),
             ]);
         } catch (\Exception $exception) {
@@ -65,7 +68,10 @@ class Notifier
     {
         try {
             $row = $this->requests->getById($requestId);
-            $this->notifyBuyer($requestId, 'tonyapps_b2borderapproval_rejected', [
+            if (!$row) {
+                return;
+            }
+            $this->notifyBuyer($row, 'tonyapps_b2borderapproval_rejected', [
                 'checkout_url' => $this->storeManager->getStore((int)($row['store_id'] ?? 0))->getUrl('checkout/cart'),
                 'comment' => $this->escaper->escapeHtml((string)($row['comment'] ?? '')),
             ]);
@@ -75,12 +81,8 @@ class Notifier
     }
 
     /** @param array<string, mixed> $extra */
-    private function notifyBuyer(int $requestId, string $template, array $extra): void
+    private function notifyBuyer(array $row, string $template, array $extra): void
     {
-        $row = $this->requests->getById($requestId);
-        if (!$row) {
-            return;
-        }
         try {
             $this->send($template, $row, (string)$row['requester_email'], $extra + [
                 'buyer_name' => $this->escaper->escapeHtml((string)$row['requester_name']),

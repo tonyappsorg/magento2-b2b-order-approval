@@ -5,38 +5,39 @@ namespace Tonyapps\B2bOrderApproval\Controller\Approval;
 
 use Magento\Customer\Model\Session;
 use Magento\Framework\App\Action\HttpPostActionInterface;
+use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Message\ManagerInterface;
+use Magento\Framework\UrlInterface;
+use Tonyapps\B2b\Api\Data\CompanyInterface;
+use Tonyapps\B2b\Controller\AbstractCompanyAction;
 use Tonyapps\B2b\Model\CompanyContext;
-use Tonyapps\B2b\Model\Permissions;
 use Tonyapps\B2bOrderApproval\Model\ApprovalService;
 use Tonyapps\B2bOrderApproval\Model\Notifier;
 
-class Approve implements HttpPostActionInterface
+class Approve extends AbstractCompanyAction implements HttpPostActionInterface
 {
     public function __construct(
-        private readonly Session $customerSession,
-        private readonly CompanyContext $companyContext,
+        RequestInterface $request,
+        ResultFactory $resultFactory,
+        CompanyContext $companyContext,
+        Session $customerSession,
+        ManagerInterface $messageManager,
+        UrlInterface $url,
         private readonly ApprovalService $approvalService,
-        private readonly Notifier $notifier,
-        private readonly \Magento\Framework\App\RequestInterface $request,
-        private readonly ResultFactory $resultFactory,
-        private readonly ManagerInterface $messageManager
+        private readonly Notifier $notifier
     ) {
+        parent::__construct($request, $resultFactory, $companyContext, $customerSession, $messageManager, $url);
     }
 
-    public function execute(): ResultInterface
+    protected function executeForCompany(CompanyInterface $company): ResultInterface
     {
-        $redirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
-        $company = $this->companyContext->getCompany();
-        if (!$this->customerSession->isLoggedIn() || !$this->companyContext->isEnabled()
-            || !$this->companyContext->isAllowed(Permissions::PROFILE_VIEW)
-            || !$company || (int)$company->getAdminCustomerId() !== (int)$this->customerSession->getCustomerId()
-        ) {
+        if ((int)$company->getAdminCustomerId() !== (int)$this->customerSession->getCustomerId()) {
             $this->messageManager->addErrorMessage(__('Only the company administrator can review order requests.'));
-            return $redirect->setPath('customer/account');
+
+            return $this->redirect('customer/account');
         }
         try {
             $row = $this->approvalService->approve(
@@ -49,6 +50,7 @@ class Approve implements HttpPostActionInterface
         } catch (LocalizedException $exception) {
             $this->messageManager->addErrorMessage($exception->getMessage());
         }
-        return $redirect->setPath('b2borderapproval/approval/index');
+
+        return $this->redirect('b2borderapproval/approval/index');
     }
 }
