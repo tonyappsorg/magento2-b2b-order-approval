@@ -3,7 +3,7 @@
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
         <referenceBlock name="customer_account_navigation">
-            <block class="Magento\Framework\View\Element\Html\Link\Current" name="tonyapps.b2b.order.approval.nav">
+            <block class="Tonyapps\B2bOrderApproval\Block\Account\ApprovalLink" name="tonyapps.b2b.order.approval.nav">
                 <arguments>
                     <argument name="label" xsi:type="string" translate="true">Order Approval Requests</argument>
                     <argument name="path" xsi:type="string">b2borderapproval/approval/index</argument>

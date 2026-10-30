@@ -14,6 +14,14 @@ Optional storefront order approval for Tonyapps_B2b company accounts on Magento 
 
 Approver roles and multi-level approval chains are not part of this first release; only the company administrator can approve or reject. The threshold is configured in the website's base currency. No payment data is copied into the approval table.
 
+## 2026-10-30 review fixes
+
+- The approval gate moved from `placeOrder()` to `QuoteManagement::submit()`, so PayPal Express and PaymentServices buttons are gated too; multishipping is gated by an observer on `checkout_type_multishipping_create_orders_single`. Admin-created orders are not gated.
+- `/checkout` redirects to the cart with a notice while approval is missing (mini-cart and direct links no longer reach the payment step).
+- The approval queue page is no longer full-page cached and shows the account menu; the menu link is shown only to the company administrator. The queue is paginated (50 per page).
+- Approving a changed cart now emails the buyer the automatic rejection. Request emails greet the administrator and are no longer double-escaped.
+- Duplicate submits are serialized on the quote row; the fingerprint check no longer leaves totals flagged as collected before payment import; the cart page computes the approval state once per request.
+
 ## Install
 
 Install `tonyapps/module-b2b-order-approval` with `tonyapps/module-b2b`, run `bin/magento setup:upgrade`, then enable the feature and set the minimum subtotal. Set the threshold to zero to require approval for every non-admin company order.

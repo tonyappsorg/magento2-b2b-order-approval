@@ -54,6 +54,16 @@ $requests = $block->getRequests();
             <?php endforeach; ?>
             </tbody>
         </table>
+        <?php if ($block->getPreviousPageUrl() || $block->getNextPageUrl()): ?>
+            <div class="actions-toolbar">
+                <?php if ($url = $block->getPreviousPageUrl()): ?>
+                    <a class="action previous" href="<?= $escaper->escapeUrl($url) ?>"><?= $escaper->escapeHtml(__('Previous')) ?></a>
+                <?php endif; ?>
+                <?php if ($url = $block->getNextPageUrl()): ?>
+                    <a class="action next" href="<?= $escaper->escapeUrl($url) ?>"><?= $escaper->escapeHtml(__('Next')) ?></a>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
     <?php else: ?>
         <div class="message info"><span><?= $escaper->escapeHtml(__('There are no order approval requests.')) ?></span></div>
     <?php endif; ?>

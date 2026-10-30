@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="checkout_type_multishipping_create_orders_single">
+        <observer name="tonyapps_b2b_order_approval_multishipping_gate" instance="Tonyapps\B2bOrderApproval\Observer\EnforceMultishippingApproval"/>
+    </event>
+    <event name="checkout_submit_all_after">
+        <observer name="tonyapps_b2b_order_approval_multishipping_ordered" instance="Tonyapps\B2bOrderApproval\Observer\MarkMultishippingApprovalOrdered"/>
+    </event>
+</config>

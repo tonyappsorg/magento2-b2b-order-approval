@@ -5,7 +5,6 @@ namespace Tonyapps\B2bOrderApproval\Model;
 
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Framework\Mail\Template\TransportBuilder;
-use Magento\Framework\Escaper;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 use Tonyapps\B2b\Api\CompanyRepositoryInterface;
@@ -19,7 +18,6 @@ class Notifier
         private readonly CustomerRepositoryInterface $customers,
         private readonly TransportBuilder $transportBuilder,
         private readonly StoreManagerInterface $storeManager,
-        private readonly Escaper $escaper,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -37,9 +35,11 @@ class Notifier
                 'tonyapps_b2borderapproval_request',
                 $row,
                 (string)$recipient->getEmail(),
+                // Email {{trans}} and {{var}} escape values themselves; escaping here doubles it.
                 [
-                    'company_name' => $this->escaper->escapeHtml((string)$company->getName()),
-                    'buyer_name' => $this->escaper->escapeHtml((string)$row['requester_name']),
+                    'admin_name' => trim($recipient->getFirstname() . ' ' . $recipient->getLastname()),
+                    'company_name' => (string)$company->getName(),
+                    'buyer_name' => (string)$row['requester_name'],
                     'request_id' => (int)$row['entity_id'],
                     'approval_url' => $this->storeManager->getStore((int)$row['store_id'])->getUrl('b2borderapproval/approval/index'),
                 ]
@@ -73,7 +73,7 @@ class Notifier
             }
             $this->notifyBuyer($row, 'tonyapps_b2borderapproval_rejected', [
                 'checkout_url' => $this->storeManager->getStore((int)($row['store_id'] ?? 0))->getUrl('checkout/cart'),
-                'comment' => $this->escaper->escapeHtml((string)($row['comment'] ?? '')),
+                'comment' => (string)($row['comment'] ?? ''),
             ]);
         } catch (\Exception $exception) {
             $this->logger->error('B2B order approval notification failed: ' . $exception->getMessage());
@@ -85,7 +85,7 @@ class Notifier
     {
         try {
             $this->send($template, $row, (string)$row['requester_email'], $extra + [
-                'buyer_name' => $this->escaper->escapeHtml((string)$row['requester_name']),
+                'buyer_name' => (string)$row['requester_name'],
                 'request_id' => (int)$row['entity_id'],
             ]);
         } catch (\Exception $exception) {

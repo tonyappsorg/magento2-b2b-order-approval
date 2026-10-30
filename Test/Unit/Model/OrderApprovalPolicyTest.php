@@ -42,6 +42,16 @@ class OrderApprovalPolicyTest extends TestCase
         self::assertTrue($policy->requiresApproval($quote));
     }
 
+    public function testGuestCheckoutMethodOnACustomerCartStillRequiresApproval(): void
+    {
+        $policy = $this->policy(true, 100.0, 1);
+        $quote = $this->quote(101, 100.0);
+        $quote->setOrigData('customer_id', 101);
+        $quote->setCustomerId(null);
+
+        self::assertTrue($policy->requiresApproval($quote));
+    }
+
     public function testCompanyAdministratorCanPlaceOrdersDirectly(): void
     {
         $policy = $this->policy(true, 0.0, 7);

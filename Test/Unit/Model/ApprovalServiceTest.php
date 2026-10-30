@@ -11,6 +11,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Tonyapps\B2bOrderApproval\Model\ApprovalService;
 use Tonyapps\B2bOrderApproval\Model\CartFingerprint;
+use Tonyapps\B2bOrderApproval\Model\Notifier;
 use Tonyapps\B2bOrderApproval\Model\OrderApprovalPolicy;
 use Tonyapps\B2bOrderApproval\Model\ResourceModel\ApprovalRequest;
 
@@ -21,6 +22,7 @@ class ApprovalServiceTest extends TestCase
     private OrderApprovalPolicy&MockObject $policy;
     private CartRepositoryInterface&MockObject $cartRepository;
     private Json&MockObject $json;
+    private Notifier&MockObject $notifier;
     private Quote&MockObject $quote;
     private ApprovalService $service;
 
@@ -31,6 +33,7 @@ class ApprovalServiceTest extends TestCase
         $this->policy = $this->createMock(OrderApprovalPolicy::class);
         $this->cartRepository = $this->createMock(CartRepositoryInterface::class);
         $this->json = $this->createMock(Json::class);
+        $this->notifier = $this->createMock(Notifier::class);
         $this->quote = $this->getMockBuilder(Quote::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['getId', 'hasItems', 'collectTotals'])
@@ -43,14 +46,17 @@ class ApprovalServiceTest extends TestCase
             'is_active' => 1,
         ]);
         $this->quote->method('hasItems')->willReturn(true);
-        $this->quote->method('collectTotals')->willReturnSelf();
+        $this->quote->method('collectTotals')->willReturnCallback(
+            fn() => $this->quote->setTotalsCollectedFlag(true)
+        );
         $this->quote->method('getId')->willReturn(10);
         $this->service = new ApprovalService(
             $this->requests,
             $this->fingerprint,
             $this->policy,
             $this->cartRepository,
-            $this->json
+            $this->json,
+            $this->notifier
         );
     }
 
@@ -97,6 +103,7 @@ class ApprovalServiceTest extends TestCase
         $this->policy->method('getCompanyId')->with($this->quote)->willReturn(5);
         $this->fingerprint->method('hash')->with($this->quote)->willReturn('new-fingerprint');
         $this->requests->expects(self::once())->method('reject')->with(31, 7, 'Cart changed before approval.')->willReturn(true);
+        $this->notifier->expects(self::once())->method('rejected')->with(31);
 
         $this->expectException(LocalizedException::class);
         $this->service->approve(31, 7, 5);
@@ -106,5 +113,56 @@ class ApprovalServiceTest extends TestCase
     {
         $this->requests->expects(self::once())->method('markOrdered')->with(31, 900);
         $this->service->markOrdered(31, 900);
+    }
+
+    public function testApprovedQuoteLookupDoesNotLeaveTotalsMarkedCollected(): void
+    {
+        $this->quote->setTotalsCollectedFlag(false);
+        $this->requests->method('getApprovedForQuote')->with(10)->willReturn(
+            ['entity_id' => 31, 'company_id' => 5, 'customer_id' => 21, 'cart_hash' => 'fingerprint', 'base_subtotal' => 120.0]
+        );
+        $this->policy->method('getCompanyId')->willReturn(5);
+        $this->fingerprint->method('hash')->willReturn('fingerprint');
+
+        self::assertSame(31, (int)$this->service->getApprovedForQuote($this->quote)['entity_id']);
+        self::assertFalse((bool)$this->quote->getTotalsCollectedFlag());
+    }
+
+    public function testPlacementGateAllowsQuotesThatNeedNoApproval(): void
+    {
+        $this->policy->method('requiresApproval')->willReturn(false);
+        $this->requests->expects(self::never())->method('getApprovedForQuote');
+
+        self::assertNull($this->service->assertCanPlaceOrder($this->quote));
+    }
+
+    public function testPlacementGateRefusesAnUnapprovedCompanyOrder(): void
+    {
+        $this->policy->method('requiresApproval')->willReturn(true);
+        $this->requests->method('getApprovedForQuote')->willReturn(null);
+
+        $this->expectException(LocalizedException::class);
+        $this->service->assertCanPlaceOrder($this->quote);
+    }
+
+    public function testPlacementGateReturnsTheApprovalToConsume(): void
+    {
+        $this->policy->method('requiresApproval')->willReturn(true);
+        $this->policy->method('getCompanyId')->willReturn(5);
+        $this->fingerprint->method('hash')->willReturn('fingerprint');
+        $this->requests->method('getApprovedForQuote')->willReturn(
+            ['entity_id' => 31, 'company_id' => 5, 'customer_id' => 21, 'cart_hash' => 'fingerprint', 'base_subtotal' => 120.0]
+        );
+
+        self::assertSame(31, $this->service->assertCanPlaceOrder($this->quote));
+    }
+
+    public function testCheckoutStateIsLookedUpOncePerRequest(): void
+    {
+        $this->policy->expects(self::once())->method('requiresApproval')->willReturn(true);
+        $this->requests->expects(self::once())->method('getApprovedForQuote')->willReturn(null);
+
+        self::assertSame(ApprovalService::CHECKOUT_NEEDS_APPROVAL, $this->service->getCheckoutState($this->quote));
+        self::assertSame(ApprovalService::CHECKOUT_NEEDS_APPROVAL, $this->service->getCheckoutState($this->quote));
     }
 }

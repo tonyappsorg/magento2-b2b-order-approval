@@ -22,6 +22,25 @@ class ApprovalRequest extends AbstractDb
     public function create(Quote $quote, int $companyId, int $customerId, string $cartHash, string $cartSnapshot): int
     {
         $connection = $this->getConnection();
+        $connection->beginTransaction();
+        try {
+            // Lock the quote row so a double submit cannot insert two pending requests.
+            $connection->fetchOne(
+                $connection->select()->from($this->getTable('quote'), ['entity_id'])
+                    ->where('entity_id = ?', (int)$quote->getId())->forUpdate(true)
+            );
+            $requestId = $this->createLocked($quote, $companyId, $customerId, $cartHash, $cartSnapshot);
+            $connection->commit();
+            return $requestId;
+        } catch (\Throwable $exception) {
+            $connection->rollBack();
+            throw $exception;
+        }
+    }
+
+    private function createLocked(Quote $quote, int $companyId, int $customerId, string $cartHash, string $cartSnapshot): int
+    {
+        $connection = $this->getConnection();
         $pending = $connection->fetchRow(
             $connection->select()->from($this->getMainTable(), ['entity_id', 'cart_hash'])
                 ->where('quote_id = ?', (int)$quote->getId())
@@ -61,11 +80,11 @@ class ApprovalRequest extends AbstractDb
     }
 
     /** @return array<int, array<string, mixed>> */
-    public function getForCompany(int $companyId, int $limit = 100): array
+    public function getForCompany(int $companyId, int $limit = 100, int $offset = 0): array
     {
         $select = $this->getConnection()->select()->from($this->getMainTable())
             ->where('company_id = ?', $companyId)
-            ->order('entity_id DESC')->limit($limit);
+            ->order('entity_id DESC')->limit($limit, max(0, $offset));
         return $this->getConnection()->fetchAll($select);
     }
 

@@ -3,35 +3,46 @@ declare(strict_types=1);
 
 namespace Tonyapps\B2bOrderApproval\Plugin;
 
+use Magento\Framework\App\Area;
+use Magento\Framework\App\State;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Quote\Api\CartRepositoryInterface;
+use Magento\Quote\Model\Quote;
 use Magento\Quote\Model\QuoteManagement;
 use Tonyapps\B2bOrderApproval\Model\ApprovalService;
-use Tonyapps\B2bOrderApproval\Model\OrderApprovalPolicy;
 
+/**
+ * Approval gate on QuoteManagement::submit(), which placeOrder(), PayPal Express and the
+ * PaymentServices smart buttons all go through. Multishipping is covered by observers.
+ */
 class QuoteManagementPlugin
 {
     public function __construct(
-        private readonly CartRepositoryInterface $cartRepository,
-        private readonly OrderApprovalPolicy $policy,
-        private readonly ApprovalService $approvalService
+        private readonly ApprovalService $approvalService,
+        private readonly State $appState
     ) {
     }
 
-    public function aroundPlaceOrder(QuoteManagement $subject, callable $proceed, $cartId, $paymentMethod = null)
+    public function aroundSubmit(QuoteManagement $subject, callable $proceed, Quote $quote, $orderData = [])
     {
-        $quote = $this->cartRepository->get((int)$cartId);
-        if (!$this->policy->requiresApproval($quote)) {
-            return $proceed($cartId, $paymentMethod);
+        // Orders created by a store administrator in the admin panel are not buyer checkouts.
+        if ($this->isAdminArea()) {
+            return $proceed($quote, $orderData);
         }
 
-        $request = $this->approvalService->getApprovedForQuote($quote);
-        if (!$request) {
-            throw new LocalizedException(__('This company order needs approval. Submit the cart from the shopping cart page.'));
+        $requestId = $this->approvalService->assertCanPlaceOrder($quote);
+        $order = $proceed($quote, $orderData);
+        if ($requestId && $order && $order->getId()) {
+            $this->approvalService->markOrdered($requestId, (int)$order->getId());
         }
+        return $order;
+    }
 
-        $orderId = $proceed($cartId, $paymentMethod);
-        $this->approvalService->markOrdered((int)$request['entity_id'], (int)$orderId);
-        return $orderId;
+    private function isAdminArea(): bool
+    {
+        try {
+            return $this->appState->getAreaCode() === Area::AREA_ADMINHTML;
+        } catch (LocalizedException) {
+            return false;
+        }
     }
 }

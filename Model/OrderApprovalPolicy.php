@@ -27,14 +27,15 @@ class OrderApprovalPolicy
 
     public function requiresApproval(Quote $quote): bool
     {
+        $customerId = $this->customerId($quote);
         if (!$this->b2bConfig->isEnabled((int)$quote->getStoreId())
             || !$this->scopeConfig->isSetFlag(self::XML_PATH_ENABLED, ScopeInterface::SCOPE_STORE, $quote->getStoreId())
-            || !$quote->getCustomerId()
+            || !$customerId
         ) {
             return false;
         }
 
-        $companyId = $this->membership->getCompanyId((int)$quote->getCustomerId());
+        $companyId = $this->membership->getCompanyId($customerId);
         if ($companyId === null) {
             return false;
         }
@@ -48,7 +49,7 @@ class OrderApprovalPolicy
             return false;
         }
 
-        if ((int)$company->getAdminCustomerId() === (int)$quote->getCustomerId()) {
+        if ((int)$company->getAdminCustomerId() === $customerId) {
             return false;
         }
 
@@ -63,7 +64,16 @@ class OrderApprovalPolicy
 
     public function getCompanyId(Quote $quote): ?int
     {
-        $customerId = (int)$quote->getCustomerId();
+        $customerId = $this->customerId($quote);
         return $customerId > 0 ? $this->membership->getCompanyId($customerId) : null;
+    }
+
+    /**
+     * placeOrder() clears customer_id when checkout_method is "guest", which a logged-in buyer can
+     * set on their own cart; the owner the quote was loaded with is still in the original data.
+     */
+    private function customerId(Quote $quote): int
+    {
+        return (int)($quote->getCustomerId() ?: $quote->getOrigData('customer_id'));
     }
 }
