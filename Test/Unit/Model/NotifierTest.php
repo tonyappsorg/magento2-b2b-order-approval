@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Tonyapps\B2bOrderApproval\Test\Unit\Model;
 
 use Magento\Customer\Api\CustomerRepositoryInterface;
+use Magento\Directory\Model\Currency;
 use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Framework\Mail\Template\TransportBuilder;
 use Magento\Framework\Mail\TransportInterface;
@@ -40,6 +41,11 @@ class NotifierTest extends TestCase
         $requests = $this->createMock(ApprovalRequest::class);
         $requests->method('getById')->willReturn([
             'entity_id' => 7, 'company_id' => 5, 'store_id' => 1, 'requester_name' => "Pat O'Brien",
+            'base_subtotal' => '118.0000',
+            'cart_snapshot' => json_encode(['items' => [
+                ['name' => 'Fusion Backpack', 'sku' => '24-MB02', 'qty' => '2.0000', 'row_total' => '118.0000'],
+                ['name' => 'Affirm Water Bottle', 'sku' => '24-UG06', 'qty' => '1.0000', 'row_total' => '0.0000'],
+            ]]),
         ]);
         $company = $this->createMock(CompanyInterface::class);
         $company->method('getName')->willReturn('O\'Brien & Co');
@@ -54,6 +60,9 @@ class NotifierTest extends TestCase
         $customers->method('getById')->with(3)->willReturn($admin);
         $store = $this->createMock(Store::class);
         $store->method('getUrl')->willReturn('https://shop/approvals');
+        $currency = $this->createMock(Currency::class);
+        $currency->method('format')->willReturnCallback(static fn(float $amount) => '$' . number_format($amount, 2));
+        $store->method('getBaseCurrency')->willReturn($currency);
         $storeManager = $this->createMock(StoreManagerInterface::class);
         $storeManager->method('getStore')->willReturn($store);
 
@@ -74,5 +83,11 @@ class NotifierTest extends TestCase
         self::assertSame('Ada Admin', $vars['admin_name']);
         self::assertSame("O'Brien & Co", $vars['company_name']);
         self::assertSame("Pat O'Brien", $vars['buyer_name']);
+        // The requested cart, for the email's item table.
+        self::assertSame('$118.00', $vars['subtotal']);
+        self::assertSame([
+            ['name' => 'Fusion Backpack', 'sku' => '24-MB02', 'qty' => '2', 'total' => '$118.00'],
+            ['name' => 'Affirm Water Bottle', 'sku' => '24-UG06', 'qty' => '1', 'total' => 'Free'],
+        ], $vars['items']);
     }
 }

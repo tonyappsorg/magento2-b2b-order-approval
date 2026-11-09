@@ -27,6 +27,12 @@ Approver roles and multi-level approval chains are not part of this first releas
 - An approval is withdrawn as soon as the saved cart no longer matches it (lines changed or the cart emptied); it shows as *Rejected — Cart changed after approval.* Re-adding the same lines later needs a new request instead of reviving the old approval.
 - The approval queue formats subtotals and line totals in the base currency and quantities without trailing zeros, and shows the order number (increment ID) instead of the internal order ID.
 
+## 2026-11-09 email redesign
+
+The request, approved and declined emails show the requested cart as a table (name, SKU, qty, line total; $0 lines
+say *Free*) with its subtotal, the rejection reason in a highlighted box and a button. New template variables:
+`items` and `subtotal`, built from the request's cart snapshot in the base currency.
+
 ## Install
 
 Install `tonyapps/module-b2b-order-approval` with `tonyapps/module-b2b`, run `bin/magento setup:upgrade`, then enable the feature and set the minimum subtotal. Set the threshold to zero to require approval for every non-admin company order.

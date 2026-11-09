@@ -2,8 +2,51 @@
 <!--@vars {
 "var buyer_name":"Buyer name",
 "var request_id":"Approval request ID",
-"var checkout_url":"Checkout URL"
+"var checkout_url":"Checkout URL",
+"var items":"Approved cart lines",
+"var subtotal":"Approved subtotal"
 } @-->
-<p>{{trans "Hello %name," name=$buyer_name}}</p>
-<p>{{trans "Your company order request #%id was approved." id=$request_id}}</p>
-<p><a href="{{var checkout_url}}">{{trans "Return to your cart and complete checkout"}}</a></p>
+{{template config_path="design/email/header_template"}}
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+    <tr>
+        <td style="padding-bottom:20px;">
+            <p style="margin:0 0 8px;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#2e7d32;">{{trans "Order approval · Request #%id" id=$request_id}}</p>
+            <h1 style="margin:0 0 12px;font-size:24px;font-weight:600;">{{trans "Your order is approved"}}</h1>
+            <p style="margin:0;">{{trans "Hi %name, your company administrator approved your order. You can complete checkout now." name=$buyer_name}}</p>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding-bottom:24px;">
+            <p style="margin:0 0 8px;font-weight:600;">{{trans "Approved order"}}</p>
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border:1px solid #e5e5e5;">
+                <tr>
+                    <th align="left" style="padding:10px 12px;background:#f2f2f2;font-size:12px;font-weight:600;text-transform:uppercase;color:#666666;">{{trans "Product"}}</th>
+                    <th align="right" style="padding:10px 12px;background:#f2f2f2;font-size:12px;font-weight:600;text-transform:uppercase;color:#666666;">{{trans "Qty"}}</th>
+                    <th align="right" style="padding:10px 12px;background:#f2f2f2;font-size:12px;font-weight:600;text-transform:uppercase;color:#666666;">{{trans "Total"}}</th>
+                </tr>
+                {{for item in items}}
+                <tr>
+                    <td style="padding:12px;border-bottom:1px solid #e5e5e5;"><strong>{{var item.name}}</strong><br><span style="font-size:12px;color:#999999;">{{var item.sku}}</span></td>
+                    <td align="right" style="padding:12px;border-bottom:1px solid #e5e5e5;">{{var item.qty}}</td>
+                    <td align="right" style="padding:12px;border-bottom:1px solid #e5e5e5;white-space:nowrap;">{{var item.total}}</td>
+                </tr>
+                {{/for}}
+                <tr>
+                    <td colspan="2" style="padding:12px;font-weight:600;">{{trans "Subtotal"}}</td>
+                    <td align="right" style="padding:12px;font-weight:600;white-space:nowrap;">{{var subtotal}}</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td align="center" style="padding:8px 0 24px;">
+            <a href="{{var checkout_url}}" style="display:inline-block;padding:14px 32px;background:#2e7d32;color:#ffffff;text-decoration:none;font-size:16px;font-weight:600;border-radius:3px;">{{trans "Complete checkout"}}</a>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding-top:16px;border-top:1px solid #e5e5e5;">
+            <p style="margin:0;font-size:12px;color:#999999;">{{trans "The approval covers exactly this cart. If you change it, you will need to request approval again."}}</p>
+        </td>
+    </tr>
+</table>
+{{template config_path="design/email/footer_template"}}

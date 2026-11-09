@@ -3,9 +3,62 @@
 "var buyer_name":"Buyer name",
 "var request_id":"Approval request ID",
 "var comment":"Rejection comment",
-"var checkout_url":"Cart URL"
+"var checkout_url":"Cart URL",
+"var items":"Requested cart lines",
+"var subtotal":"Requested subtotal"
 } @-->
-<p>{{trans "Hello %name," name=$buyer_name}}</p>
-<p>{{trans "Your company order request #%id was declined." id=$request_id}}</p>
-<p>{{var comment}}</p>
-<p><a href="{{var checkout_url}}">{{trans "Review your cart"}}</a></p>
+{{template config_path="design/email/header_template"}}
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+    <tr>
+        <td style="padding-bottom:20px;">
+            <p style="margin:0 0 8px;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#e22626;">{{trans "Order approval · Request #%id" id=$request_id}}</p>
+            <h1 style="margin:0 0 12px;font-size:24px;font-weight:600;">{{trans "Your order request was declined"}}</h1>
+            <p style="margin:0;">{{trans "Hi %name, your company administrator did not approve this order." name=$buyer_name}}</p>
+        </td>
+    </tr>
+    {{depend comment}}
+    <tr>
+        <td style="padding-bottom:24px;">
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                <tr>
+                    <td style="padding:16px 20px;background:#fdf0f0;border-left:4px solid #e22626;border-radius:2px;"><p style="margin:0 0 4px;font-weight:600;">{{trans "Reason"}}</p><p style="margin:0;">{{var comment}}</p></td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    {{/depend}}
+    <tr>
+        <td style="padding-bottom:24px;">
+            <p style="margin:0 0 8px;font-weight:600;">{{trans "Requested order"}}</p>
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border:1px solid #e5e5e5;">
+                <tr>
+                    <th align="left" style="padding:10px 12px;background:#f2f2f2;font-size:12px;font-weight:600;text-transform:uppercase;color:#666666;">{{trans "Product"}}</th>
+                    <th align="right" style="padding:10px 12px;background:#f2f2f2;font-size:12px;font-weight:600;text-transform:uppercase;color:#666666;">{{trans "Qty"}}</th>
+                    <th align="right" style="padding:10px 12px;background:#f2f2f2;font-size:12px;font-weight:600;text-transform:uppercase;color:#666666;">{{trans "Total"}}</th>
+                </tr>
+                {{for item in items}}
+                <tr>
+                    <td style="padding:12px;border-bottom:1px solid #e5e5e5;"><strong>{{var item.name}}</strong><br><span style="font-size:12px;color:#999999;">{{var item.sku}}</span></td>
+                    <td align="right" style="padding:12px;border-bottom:1px solid #e5e5e5;">{{var item.qty}}</td>
+                    <td align="right" style="padding:12px;border-bottom:1px solid #e5e5e5;white-space:nowrap;">{{var item.total}}</td>
+                </tr>
+                {{/for}}
+                <tr>
+                    <td colspan="2" style="padding:12px;font-weight:600;">{{trans "Subtotal"}}</td>
+                    <td align="right" style="padding:12px;font-weight:600;white-space:nowrap;">{{var subtotal}}</td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td align="center" style="padding:8px 0 24px;">
+            <a href="{{var checkout_url}}" style="display:inline-block;padding:14px 32px;background:#1979c3;color:#ffffff;text-decoration:none;font-size:16px;font-weight:600;border-radius:3px;">{{trans "Review your cart"}}</a>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding-top:16px;border-top:1px solid #e5e5e5;">
+            <p style="margin:0;font-size:12px;color:#999999;">{{trans "You can change your cart and request approval again."}}</p>
+        </td>
+    </tr>
+</table>
+{{template config_path="design/email/footer_template"}}

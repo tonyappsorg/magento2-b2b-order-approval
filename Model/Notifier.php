@@ -105,10 +105,38 @@ class Notifier
         $transport = $this->transportBuilder
             ->setTemplateIdentifier($template)
             ->setTemplateOptions(['area' => \Magento\Framework\App\Area::AREA_FRONTEND, 'store' => $storeId])
-            ->setTemplateVars($vars)
+            ->setTemplateVars($vars + $this->cartVars($row, $storeId))
             ->setFromByScope('general', $storeId)
             ->addTo($recipient)
             ->getTransport();
         $transport->sendMessage();
+    }
+
+    /**
+     * The requested cart for the emails' item table: lines from the request's snapshot and its subtotal,
+     * in the website's base currency.
+     *
+     * @param array<string, mixed> $row
+     * @return array<string, mixed>
+     */
+    private function cartVars(array $row, int $storeId): array
+    {
+        $currency = $this->storeManager->getStore($storeId)->getBaseCurrency();
+        $format = static fn($amount): string => (string)$currency->format((float)$amount, [], false);
+        $snapshot = json_decode((string)($row['cart_snapshot'] ?? ''), true);
+        $items = [];
+        foreach (is_array($snapshot['items'] ?? null) ? $snapshot['items'] : [] as $item) {
+            $items[] = [
+                'name' => (string)($item['name'] ?? ''),
+                'sku' => (string)($item['sku'] ?? ''),
+                'qty' => (string)(float)($item['qty'] ?? 0),
+                // Free gifts and other $0 lines.
+                'total' => (float)($item['row_total'] ?? 0) > 0 ? $format($item['row_total']) : (string)__('Free'),
+            ];
+        }
+        return [
+            'items' => $items,
+            'subtotal' => $format($row['base_subtotal'] ?? 0),
+        ];
     }
 }
