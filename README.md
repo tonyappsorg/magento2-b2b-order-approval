@@ -22,6 +22,11 @@ Approver roles and multi-level approval chains are not part of this first releas
 - Approving a changed cart now emails the buyer the automatic rejection. Request emails greet the administrator and are no longer double-escaped.
 - Duplicate submits are serialized on the quote row; the fingerprint check no longer leaves totals flagged as collected before payment import; the cart page computes the approval state once per request.
 
+## 2026-11-09 QA fixes
+
+- An approval is withdrawn as soon as the saved cart no longer matches it (lines changed or the cart emptied); it shows as *Rejected — Cart changed after approval.* Re-adding the same lines later needs a new request instead of reviving the old approval.
+- The approval queue formats subtotals and line totals in the base currency and quantities without trailing zeros, and shows the order number (increment ID) instead of the internal order ID.
+
 ## Install
 
 Install `tonyapps/module-b2b-order-approval` with `tonyapps/module-b2b`, run `bin/magento setup:upgrade`, then enable the feature and set the minimum subtotal. Set the threshold to zero to require approval for every non-admin company order.

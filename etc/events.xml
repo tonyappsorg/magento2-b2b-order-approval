@@ -7,4 +7,7 @@
     <event name="checkout_submit_all_after">
         <observer name="tonyapps_b2b_order_approval_multishipping_ordered" instance="Tonyapps\B2bOrderApproval\Observer\MarkMultishippingApprovalOrdered"/>
     </event>
+    <event name="sales_quote_save_after">
+        <observer name="tonyapps_b2b_order_approval_invalidate_changed" instance="Tonyapps\B2bOrderApproval\Observer\InvalidateChangedApproval"/>
+    </event>
 </config>

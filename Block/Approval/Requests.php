@@ -74,6 +74,24 @@ class Requests extends Template
         return $this->getUrl('b2borderapproval/approval/reject');
     }
 
+    /** Amounts are stored in the website's base currency. */
+    public function formatBasePrice(mixed $amount): string
+    {
+        return $this->_storeManager->getStore()->getBaseCurrency()->format((float)$amount, [], false);
+    }
+
+    /** "6.0000" -> "6", "1.5000" -> "1.5" */
+    public function formatQty(mixed $qty): string
+    {
+        return (string)(float)$qty;
+    }
+
+    /** @param array<string, mixed> $row */
+    public function getOrderNumber(array $row): string
+    {
+        return (string)($row['order_increment_id'] ?? '') ?: (string)$row['order_id'];
+    }
+
     /** @param array<string, mixed> $row
      *  @return array<int, array<string, mixed>>
      */

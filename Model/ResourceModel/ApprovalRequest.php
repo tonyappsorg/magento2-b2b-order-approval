@@ -82,9 +82,14 @@ class ApprovalRequest extends AbstractDb
     /** @return array<int, array<string, mixed>> */
     public function getForCompany(int $companyId, int $limit = 100, int $offset = 0): array
     {
-        $select = $this->getConnection()->select()->from($this->getMainTable())
-            ->where('company_id = ?', $companyId)
-            ->order('entity_id DESC')->limit($limit, max(0, $offset));
+        $select = $this->getConnection()->select()->from(['request' => $this->getMainTable()])
+            ->joinLeft(
+                ['sales_order' => $this->getTable('sales_order')],
+                'sales_order.entity_id = request.order_id',
+                ['order_increment_id' => 'increment_id']
+            )
+            ->where('request.company_id = ?', $companyId)
+            ->order('request.entity_id DESC')->limit($limit, max(0, $offset));
         return $this->getConnection()->fetchAll($select);
     }
 
@@ -109,6 +114,19 @@ class ApprovalRequest extends AbstractDb
     public function markOrdered(int $id, int $orderId): void
     {
         $this->getConnection()->update($this->getMainTable(), ['status' => self::ORDERED, 'order_id' => $orderId], ['entity_id = ?' => $id, 'status = ?' => self::APPROVED]);
+    }
+
+    /**
+     * Withdraws an approval once the quote no longer matches it, so emptying the cart and re-adding the
+     * same lines later needs a new request.
+     */
+    public function invalidateApproved(int $quoteId, string $currentHash): int
+    {
+        return $this->getConnection()->update(
+            $this->getMainTable(),
+            ['status' => self::REJECTED, 'comment' => 'Cart changed after approval.'],
+            ['quote_id = ?' => $quoteId, 'status = ?' => self::APPROVED, 'cart_hash <> ?' => $currentHash]
+        );
     }
 
     public function getApprovedForQuote(int $quoteId): ?array

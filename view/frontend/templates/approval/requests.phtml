@@ -20,7 +20,7 @@ $requests = $block->getRequests();
                 <tr>
                     <td><?= (int)$row['entity_id'] ?></td>
                     <td><?= $escaper->escapeHtml($row['requester_name'] ?: $row['requester_email']) ?><br><?= $escaper->escapeHtml($row['requester_email']) ?></td>
-                    <td><?= $escaper->escapeHtml((string)$row['base_subtotal']) ?></td>
+                    <td><?= $escaper->escapeHtml($block->formatBasePrice($row['base_subtotal'])) ?></td>
                     <td><?= $escaper->escapeHtml(ucfirst((string)$row['status'])) ?></td>
                     <td><?= $escaper->escapeHtml((string)$row['created_at']) ?></td>
                     <td>
@@ -28,7 +28,7 @@ $requests = $block->getRequests();
                             <summary><?= $escaper->escapeHtml(__('View items')) ?></summary>
                             <ul>
                                 <?php foreach ($block->getItems($row) as $item): ?>
-                                    <li><?= $escaper->escapeHtml((string)$item['name']) ?> (<?= $escaper->escapeHtml((string)$item['sku']) ?>), <?= $escaper->escapeHtml(__('Qty: %1', (string)$item['qty'])) ?>, <?= $escaper->escapeHtml(__('Line total: %1', (string)$item['row_total'])) ?></li>
+                                    <li><?= $escaper->escapeHtml((string)$item['name']) ?> (<?= $escaper->escapeHtml((string)$item['sku']) ?>), <?= $escaper->escapeHtml(__('Qty: %1', $block->formatQty($item['qty']))) ?>, <?= $escaper->escapeHtml(__('Line total: %1', $block->formatBasePrice($item['row_total']))) ?></li>
                                 <?php endforeach; ?>
                             </ul>
                         </details>
@@ -47,7 +47,7 @@ $requests = $block->getRequests();
                         <?php elseif ($row['status'] === \Tonyapps\B2bOrderApproval\Model\ResourceModel\ApprovalRequest::REJECTED && $row['comment']): ?>
                             <?= $escaper->escapeHtml($row['comment']) ?>
                         <?php elseif ($row['order_id']): ?>
-                            <?= $escaper->escapeHtml(__('Order #%1', (int)$row['order_id'])) ?>
+                            <?= $escaper->escapeHtml(__('Order #%1', $block->getOrderNumber($row))) ?>
                         <?php endif; ?>
                     </td>
                 </tr>

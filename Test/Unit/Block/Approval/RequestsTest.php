@@ -3,10 +3,13 @@ declare(strict_types=1);
 
 namespace Tonyapps\B2bOrderApproval\Test\Unit\Block\Approval;
 
+use Magento\Directory\Model\Currency;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\UrlInterface;
 use Magento\Framework\View\Element\Template\Context;
+use Magento\Store\Model\Store;
+use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Tonyapps\B2b\Api\Data\CompanyInterface;
 use Tonyapps\B2b\Model\CompanyContext;
@@ -40,6 +43,17 @@ class RequestsTest extends TestCase
         self::assertNull($block->getNextPageUrl());
     }
 
+    public function testFormatsAmountsQuantitiesAndOrderNumbers(): void
+    {
+        $block = $this->block($this->createMock(ApprovalRequest::class), 1);
+
+        self::assertSame('$118.00', $block->formatBasePrice('118.0000'));
+        self::assertSame('6', $block->formatQty('6.0000'));
+        self::assertSame('1.5', $block->formatQty('1.5000'));
+        self::assertSame('000000045', $block->getOrderNumber(['order_id' => '59', 'order_increment_id' => '000000045']));
+        self::assertSame('59', $block->getOrderNumber(['order_id' => '59', 'order_increment_id' => null]));
+    }
+
     private function block(ApprovalRequest $resource, int $page): Requests
     {
         $request = $this->createMock(RequestInterface::class);
@@ -51,6 +65,15 @@ class RequestsTest extends TestCase
         $context = $this->createMock(Context::class);
         $context->method('getRequest')->willReturn($request);
         $context->method('getUrlBuilder')->willReturn($url);
+        $currency = $this->createMock(Currency::class);
+        $currency->method('format')->willReturnCallback(
+            static fn(float $amount, array $options, bool $includeContainer): string => $includeContainer ? 'container' : '$' . number_format($amount, 2)
+        );
+        $store = $this->createMock(Store::class);
+        $store->method('getBaseCurrency')->willReturn($currency);
+        $storeManager = $this->createMock(StoreManagerInterface::class);
+        $storeManager->method('getStore')->willReturn($store);
+        $context->method('getStoreManager')->willReturn($storeManager);
         $company = $this->createMock(CompanyInterface::class);
         $company->method('getId')->willReturn(5);
         $companyContext = $this->createMock(CompanyContext::class);
