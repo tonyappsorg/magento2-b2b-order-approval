@@ -33,6 +33,22 @@ The request, approved and declined emails show the requested cart as a table (na
 say *Free*) with its subtotal, the rejection reason in a highlighted box and a button. New template variables:
 `items` and `subtotal`, built from the request's cart snapshot in the base currency.
 
+## Emails
+
+Screenshots of the emails as sent (Luma theme, 2026-11-09). Source images are in `docs/emails/`.
+
+**Approval request (to the company administrator)**
+
+![Approval request (to the company administrator)](docs/emails/approval-request.png)
+
+**Order approved (to the buyer)**
+
+![Order approved (to the buyer)](docs/emails/approval-approved.png)
+
+**Order request declined (to the buyer)**
+
+![Order request declined (to the buyer)](docs/emails/approval-declined.png)
+
 ## Install
 
 Install `tonyapps/module-b2b-order-approval` with `tonyapps/module-b2b`, run `bin/magento setup:upgrade`, then enable the feature and set the minimum subtotal. Set the threshold to zero to require approval for every non-admin company order.
