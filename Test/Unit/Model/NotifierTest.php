@@ -6,7 +6,9 @@ namespace Tonyapps\B2bOrderApproval\Test\Unit\Model;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Directory\Model\Currency;
 use Magento\Customer\Api\Data\CustomerInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Mail\Template\TransportBuilder;
+use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\Mail\TransportInterface;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
@@ -30,13 +32,14 @@ class NotifierTest extends TestCase
             $this->createMock(CustomerRepositoryInterface::class),
             $this->createMock(TransportBuilder::class),
             $this->createMock(StoreManagerInterface::class),
-            $this->createMock(LoggerInterface::class)
+            $this->createMock(LoggerInterface::class),
+            $this->createMock(ScopeConfigInterface::class)
         );
 
         $notifier->approved(7);
     }
 
-    public function testRequestEmailGreetsTheAdministratorAndLeavesEscapingToTheTemplate(): void
+    public function testRequestEmailUsesTheConfiguredTemplateGreetsTheAdministratorAndLeavesEscapingToTheTemplate(): void
     {
         $requests = $this->createMock(ApprovalRequest::class);
         $requests->method('getById')->willReturn([
@@ -68,7 +71,8 @@ class NotifierTest extends TestCase
 
         $vars = null;
         $builder = $this->createMock(TransportBuilder::class);
-        foreach (['setTemplateIdentifier', 'setTemplateOptions', 'setFromByScope', 'addTo'] as $method) {
+        $builder->expects(self::once())->method('setTemplateIdentifier')->with('12')->willReturnSelf();
+        foreach (['setTemplateOptions', 'setFromByScope', 'addTo'] as $method) {
             $builder->method($method)->willReturnSelf();
         }
         $builder->method('setTemplateVars')->willReturnCallback(function (array $value) use (&$vars, $builder) {
@@ -77,7 +81,13 @@ class NotifierTest extends TestCase
         });
         $builder->method('getTransport')->willReturn($this->createMock(TransportInterface::class));
 
-        (new Notifier($requests, $companies, $customers, $builder, $storeManager, $this->createMock(LoggerInterface::class)))
+        // The template chosen for the request's store view, e.g. an Email Designer design.
+        $scopeConfig = $this->createMock(ScopeConfigInterface::class);
+        $scopeConfig->method('getValue')
+            ->with('tonyapps_b2b_order_approval/email/request_template', ScopeInterface::SCOPE_STORE, 1)
+            ->willReturn('12');
+
+        (new Notifier($requests, $companies, $customers, $builder, $storeManager, $this->createMock(LoggerInterface::class), $scopeConfig))
             ->requestSubmitted(7);
 
         self::assertSame('Ada Admin', $vars['admin_name']);

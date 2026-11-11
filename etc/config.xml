@@ -7,6 +7,11 @@
                 <enabled>0</enabled>
                 <minimum_subtotal>0</minimum_subtotal>
             </general>
+            <email>
+                <request_template>tonyapps_b2b_order_approval_email_request_template</request_template>
+                <approved_template>tonyapps_b2b_order_approval_email_approved_template</approved_template>
+                <rejected_template>tonyapps_b2b_order_approval_email_rejected_template</rejected_template>
+            </email>
         </tonyapps_b2b_order_approval>
     </default>
 </config>

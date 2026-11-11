@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace Tonyapps\B2bOrderApproval\Model;
 
 use Magento\Customer\Api\CustomerRepositoryInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Mail\Template\TransportBuilder;
+use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 use Tonyapps\B2b\Api\CompanyRepositoryInterface;
@@ -18,7 +20,8 @@ class Notifier
         private readonly CustomerRepositoryInterface $customers,
         private readonly TransportBuilder $transportBuilder,
         private readonly StoreManagerInterface $storeManager,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly ScopeConfigInterface $scopeConfig
     ) {
     }
 
@@ -32,7 +35,7 @@ class Notifier
             $company = $this->companies->getById((int)$row['company_id']);
             $recipient = $this->customers->getById((int)$company->getAdminCustomerId());
             $this->send(
-                'tonyapps_b2borderapproval_request',
+                'request',
                 $row,
                 (string)$recipient->getEmail(),
                 // Email {{trans}} and {{var}} escape values themselves; escaping here doubles it.
@@ -56,7 +59,7 @@ class Notifier
             if (!$row) {
                 return;
             }
-            $this->notifyBuyer($row, 'tonyapps_b2borderapproval_approved', [
+            $this->notifyBuyer($row, 'approved', [
                 'checkout_url' => $this->storeManager->getStore((int)($row['store_id'] ?? 0))->getUrl('checkout/cart'),
             ]);
         } catch (\Exception $exception) {
@@ -71,7 +74,7 @@ class Notifier
             if (!$row) {
                 return;
             }
-            $this->notifyBuyer($row, 'tonyapps_b2borderapproval_rejected', [
+            $this->notifyBuyer($row, 'rejected', [
                 'checkout_url' => $this->storeManager->getStore((int)($row['store_id'] ?? 0))->getUrl('checkout/cart'),
                 'comment' => (string)($row['comment'] ?? ''),
             ]);
@@ -93,8 +96,10 @@ class Notifier
         }
     }
 
-    /** @param array<string, mixed> $row
-     *  @param array<string, mixed> $vars
+    /**
+     * @param string $template request, approved or rejected: the email whose template setting is used
+     * @param array<string, mixed> $row
+     * @param array<string, mixed> $vars
      */
     private function send(string $template, array $row, string $recipient, array $vars): void
     {
@@ -103,7 +108,11 @@ class Notifier
         }
         $storeId = (int)$row['store_id'];
         $transport = $this->transportBuilder
-            ->setTemplateIdentifier($template)
+            ->setTemplateIdentifier((string)$this->scopeConfig->getValue(
+                'tonyapps_b2b_order_approval/email/' . $template . '_template',
+                ScopeInterface::SCOPE_STORE,
+                $storeId
+            ))
             ->setTemplateOptions(['area' => \Magento\Framework\App\Area::AREA_FRONTEND, 'store' => $storeId])
             ->setTemplateVars($vars + $this->cartVars($row, $storeId))
             ->setFromByScope('general', $storeId)

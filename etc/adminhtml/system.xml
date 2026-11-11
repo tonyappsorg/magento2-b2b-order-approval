@@ -23,6 +23,25 @@
                     <validate>validate-number validate-zero-or-greater</validate>
                 </field>
             </group>
+            <group id="email" translate="label" type="text" sortOrder="20"
+                   showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>Emails</label>
+                <field id="request_template" translate="label" type="select" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Approval Request Template</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                </field>
+                <field id="approved_template" translate="label" type="select" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Order Approved Template</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                </field>
+                <field id="rejected_template" translate="label" type="select" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Order Rejected Template</label>
+                    <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                </field>
+            </group>
         </section>
     </system>
 </config>

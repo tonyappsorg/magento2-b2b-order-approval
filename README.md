@@ -56,3 +56,13 @@ Install `tonyapps/module-b2b-order-approval` with `tonyapps/module-b2b`, run `bi
 ## Tests
 
 Run the focused unit suite from the Magento installation root with `vendor/bin/phpunit -c dev/tests/unit/phpunit.xml.dist app/code/Tonyapps/B2bOrderApproval/Test/Unit`.
+
+## Redesigning the emails
+
+Each email's template is chosen in **Stores › Configuration › Tonyapps › B2B Order Approval › Emails** (default and website scope). Pick a template made in **Marketing › Email Templates** or a design made
+with the [Email Designer](https://github.com/tonyappsorg/magento2-email-designer) (`Tonyapps_EmailDesigner`) (**Marketing › Communications › Email Designer**). The default template is used until another one
+is picked.
+
+The template IDs follow core's config-path convention so the setting can offer the default: `tonyapps_b2borderapproval_{request,approved,rejected}` are now `tonyapps_b2b_order_approval_email_{request,approved,rejected}_template`. Theme overrides
+keep working (they go by file name). A custom template created from the old ID keeps its content, but its *Template
+Information* no longer names the default it was loaded from.
