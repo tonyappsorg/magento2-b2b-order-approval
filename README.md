@@ -1,41 +1,41 @@
-# Tonyapps_B2bOrderApproval
+# B2B Order Approval for Magento 2
 
-Optional storefront order approval for Tonyapps_B2b company accounts on Magento Open Source.
+Let company administrators sign off on large orders before their buyers check out.
 
-## First release behavior
+Purchase approvals are part of Adobe Commerce B2B; Magento Open Source has no way to stop a company buyer from
+placing an order on their own. This module adds a simple approval step for company accounts created with
+Tonyapps B2B: above a subtotal you choose, a buyer sends the cart to their company administrator, and checkout
+opens only once the administrator has approved that exact cart.
 
-- Enabled per website under **Stores > Configuration > Tonyapps > B2B Order Approval**.
-- Company members whose cart base subtotal meets the configured threshold must request approval from the cart page.
-- The company administrator reviews the buyer, cart lines, and subtotal from **My Account > Order Approval Requests**.
-- Approval allows the buyer to return to the cart and complete the normal Magento checkout. Approval does not place the order or authorize payment.
-- Rejection supports an optional reason. The buyer and company administrator receive email notifications.
-- Requests are tied to the quote's item, option, coupon, and base subtotal fingerprint. Checkout is refused if the cart has changed since approval.
-- Company administrators can place orders without requesting approval. The existing Tonyapps_B2b enable switch and active company path are respected.
+## Features
 
-Approver roles and multi-level approval chains are not part of this first release; only the company administrator can approve or reject. The threshold is configured in the website's base currency. No payment data is copied into the approval table.
+- **Approval above a threshold you set** — choose the minimum cart subtotal per website, or require approval for
+  every order placed by a company member.
+- **One-click request from the cart** — the buyer asks for approval on the cart page; no extra forms.
+- **Review queue in My Account** — the company administrator sees each request with the buyer, the cart lines and
+  the subtotal, and approves or rejects it, with an optional reason.
+- **Approval matches the cart** — an approval covers exactly the products, options, coupon and subtotal that were
+  requested. If the cart changes afterwards, the approval is withdrawn and a new request is needed.
+- **Every checkout path is covered** — the regular checkout, express payment buttons such as PayPal Express, and
+  multi-address checkout all respect the approval.
+- **Clear emails** — the administrator is emailed when a request arrives; the buyer is emailed when it is approved
+  or declined. Each email lists the cart items with their totals.
+- **Administrators are never blocked** — the company administrator places orders without asking for approval.
 
-## 2026-10-30 review fixes
+## How it works
 
-- The approval gate moved from `placeOrder()` to `QuoteManagement::submit()`, so PayPal Express and PaymentServices buttons are gated too; multishipping is gated by an observer on `checkout_type_multishipping_create_orders_single`. Admin-created orders are not gated.
-- `/checkout` redirects to the cart with a notice while approval is missing (mini-cart and direct links no longer reach the payment step).
-- The approval queue page is no longer full-page cached and shows the account menu; the menu link is shown only to the company administrator. The queue is paginated (50 per page).
-- Approving a changed cart now emails the buyer the automatic rejection. Request emails greet the administrator and are no longer double-escaped.
-- Duplicate submits are serialized on the quote row; the fingerprint check no longer leaves totals flagged as collected before payment import; the cart page computes the approval state once per request.
+1. A company member fills the cart. If the subtotal reaches the threshold, the cart page shows **Request Order Approval**
+   instead of letting them proceed to checkout.
+2. The company administrator gets an email and opens **My Account › Order Approval Requests**.
+3. The administrator approves or rejects. The buyer gets an email either way.
+4. After approval, the buyer goes back to the cart and checks out as usual, choosing payment and shipping then.
+   Approval does not place the order or charge anything.
 
-## 2026-11-09 QA fixes
+Orders created by store staff in the Magento admin are not affected.
 
-- An approval is withdrawn as soon as the saved cart no longer matches it (lines changed or the cart emptied); it shows as *Rejected — Cart changed after approval.* Re-adding the same lines later needs a new request instead of reviving the old approval.
-- The approval queue formats subtotals and line totals in the base currency and quantities without trailing zeros, and shows the order number (increment ID) instead of the internal order ID.
+## Screenshots
 
-## 2026-11-09 email redesign
-
-The request, approved and declined emails show the requested cart as a table (name, SKU, qty, line total; $0 lines
-say *Free*) with its subtotal, the rejection reason in a highlighted box and a button. New template variables:
-`items` and `subtotal`, built from the request's cart snapshot in the base currency.
-
-## Emails
-
-Screenshots of the emails as sent (Luma theme, 2026-11-09). Source images are in `docs/emails/`.
+Emails as sent (Luma theme, 2026-11-09). Source images are in `docs/emails/`.
 
 **Approval request (to the company administrator)**
 
@@ -49,20 +49,44 @@ Screenshots of the emails as sent (Luma theme, 2026-11-09). Source images are in
 
 ![Order request declined (to the buyer)](docs/emails/approval-declined.png)
 
-## Install
+## Good to know
 
-Install `tonyapps/module-b2b-order-approval` with `tonyapps/module-b2b`, run `bin/magento setup:upgrade`, then enable the feature and set the minimum subtotal. Set the threshold to zero to require approval for every non-admin company order.
+- Only the company administrator can approve or reject. Approver roles and multi-level approval chains are not
+  included.
+- The threshold is set in the website's base currency.
+- Approval happens before checkout, not after the order is placed: there is no purchase-order status in the
+  Magento admin.
+- Requires the Tonyapps B2B module; the feature applies only to customers who belong to an active company.
 
-## Tests
+## Requirements
 
-Run the focused unit suite from the Magento installation root with `vendor/bin/phpunit -c dev/tests/unit/phpunit.xml.dist app/code/Tonyapps/B2bOrderApproval/Test/Unit`.
+- Magento Open Source 2.4 (developed on 2.4.8-p4)
+- PHP 8.3 or 8.4
+- `tonyapps/module-b2b`
 
-## Redesigning the emails
+## Installation
 
-Each email's template is chosen in **Stores › Configuration › Tonyapps › B2B Order Approval › Emails** (default and website scope). Pick a template made in **Marketing › Email Templates** or a design made
-with the [Email Designer](https://github.com/tonyappsorg/magento2-email-designer) (`Tonyapps_EmailDesigner`) (**Marketing › Communications › Email Designer**). The default template is used until another one
-is picked.
+```bash
+composer require tonyapps/module-b2b-order-approval
+bin/magento setup:upgrade
+```
 
-The template IDs follow core's config-path convention so the setting can offer the default: `tonyapps_b2borderapproval_{request,approved,rejected}` are now `tonyapps_b2b_order_approval_email_{request,approved,rejected}_template`. Theme overrides
-keep working (they go by file name). A custom template created from the old ID keeps its content, but its *Template
-Information* no longer names the default it was loaded from.
+Then enable the feature and set the minimum subtotal (see below).
+
+## Configuration
+
+- **Stores › Configuration › Tonyapps › B2B Order Approval › General** — enable per website and set the minimum
+  base subtotal that requires approval (`0` = every order by a company member).
+- **Stores › Configuration › Tonyapps › B2B Order Approval › Emails** — choose the request, approved and rejected
+  email templates.
+
+### Redesigning the emails
+
+Pick any template made in **Marketing › Email Templates**, or a design made with the
+[Email Designer](https://github.com/tonyappsorg/magento2-email-designer) (**Marketing › Communications › Email
+Designer**), in the Emails settings above (default and website scope). The built-in template is used until you pick
+another one.
+
+## For developers
+
+Architecture, decisions, data model and tests are in [AGENTS.md](AGENTS.md).
