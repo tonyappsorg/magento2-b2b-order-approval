@@ -4,4 +4,32 @@
     <type name="Magento\Quote\Model\QuoteManagement">
         <plugin name="tonyapps_b2b_order_approval_submit" type="Tonyapps\B2bOrderApproval\Plugin\QuoteManagementPlugin" sortOrder="10"/>
     </type>
+    <!-- Tonyapps_EmailDesigner: blocks and starter designs for the approval emails. Ignored without that module. -->
+    <type name="Tonyapps\EmailDesigner\Model\BlockPool">
+        <arguments>
+            <argument name="blocks" xsi:type="array">
+                <item name="b2b_order_approval_items" xsi:type="array">
+                    <item name="label" xsi:type="string" translate="true">Order items</item>
+                    <item name="templates" xsi:type="array">
+                        <item name="0" xsi:type="string">tonyapps_b2b_order_approval_email_request_template</item>
+                        <item name="1" xsi:type="string">tonyapps_b2b_order_approval_email_approved_template</item>
+                        <item name="2" xsi:type="string">tonyapps_b2b_order_approval_email_rejected_template</item>
+                    </item>
+                    <item name="directive" xsi:type="string"><![CDATA[<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border:1px solid #e5e5e5;"><tr><th align="left" style="padding:10px 12px;background:#f2f2f2;font-size:12px;font-weight:600;text-transform:uppercase;color:#666666;">{{trans "Product"}}</th><th align="right" style="padding:10px 12px;background:#f2f2f2;font-size:12px;font-weight:600;text-transform:uppercase;color:#666666;">{{trans "Qty"}}</th><th align="right" style="padding:10px 12px;background:#f2f2f2;font-size:12px;font-weight:600;text-transform:uppercase;color:#666666;">{{trans "Total"}}</th></tr>{{for item in items}}<tr><td style="padding:12px;border-bottom:1px solid #e5e5e5;"><strong>{{var item.name}}</strong><br><span style="font-size:12px;color:#999999;">{{var item.sku}}</span></td><td align="right" style="padding:12px;border-bottom:1px solid #e5e5e5;">{{var item.qty}}</td><td align="right" style="padding:12px;border-bottom:1px solid #e5e5e5;white-space:nowrap;">{{var item.total}}</td></tr>{{/for}}<tr><td colspan="2" style="padding:12px;font-weight:600;">{{trans "Subtotal"}}</td><td align="right" style="padding:12px;font-weight:600;white-space:nowrap;">{{var subtotal}}</td></tr></table>]]></item>
+                </item>
+                <item name="b2b_order_approval_reason" xsi:type="array">
+                    <item name="label" xsi:type="string" translate="true">Rejection reason</item>
+                    <item name="templates" xsi:type="array">
+                        <item name="0" xsi:type="string">tonyapps_b2b_order_approval_email_rejected_template</item>
+                    </item>
+                    <item name="directive" xsi:type="string"><![CDATA[{{depend comment}}<table width="100%" cellpadding="0" cellspacing="0" role="presentation"><tr><td style="padding:16px 20px;background:#fdf0f0;border-left:4px solid #e22626;border-radius:2px;"><p style="margin:0 0 4px;font-weight:600;">{{trans "Reason"}}</p><p style="margin:0;">{{var comment}}</p></td></tr></table>{{/depend}}]]></item>
+                </item>
+            </argument>
+            <argument name="starters" xsi:type="array">
+                <item name="tonyapps_b2b_order_approval_email_request_template" xsi:type="string">Tonyapps_B2bOrderApproval::view/adminhtml/email_designer/approval_request.mjml</item>
+                <item name="tonyapps_b2b_order_approval_email_approved_template" xsi:type="string">Tonyapps_B2bOrderApproval::view/adminhtml/email_designer/approval_approved.mjml</item>
+                <item name="tonyapps_b2b_order_approval_email_rejected_template" xsi:type="string">Tonyapps_B2bOrderApproval::view/adminhtml/email_designer/approval_rejected.mjml</item>
+            </argument>
+        </arguments>
+    </type>
 </config>

@@ -1,0 +1,8 @@
+        <mj-text font-size="12px" font-weight="600" letter-spacing="1px" text-transform="uppercase" color="#2e7d32">{{trans "Order approval · Request #%id" id=$request_id}}</mj-text>
+        <mj-text font-size="24px" font-weight="600">{{trans "Your order is approved"}}</mj-text>
+        <mj-text>{{trans "Hi %name, your company administrator approved your order. You can complete checkout now." name=$buyer_name}}</mj-text>
+        <mj-text font-weight="600">{{trans "Approved order"}}</mj-text>
+        <mj-raw ta-block="b2b_order_approval_items"></mj-raw>
+        <mj-button background-color="#2e7d32" border-radius="3px" font-size="16px" font-weight="600" inner-padding="14px 32px" href="{{var checkout_url}}">{{trans "Complete checkout"}}</mj-button>
+        <mj-divider border-width="1px" border-color="#e5e5e5"></mj-divider>
+        <mj-text font-size="12px" color="#999999">{{trans "The approval covers exactly this cart. If you change it, you will need to request approval again."}}</mj-text>

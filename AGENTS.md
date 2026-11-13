@@ -79,6 +79,9 @@ Indexes: (`quote_id`, `status`), (`company_id`, `status`). No FKs. No payment da
   snapshot in base currency.
 - Templates can be replaced by a **Marketing › Email Templates** template or a `Tonyapps_EmailDesigner` design
   (**Marketing › Communications › Email Designer**).
+- Email Designer (`etc/di.xml`, `BlockPool`): block `b2b_order_approval_items` (cart table + subtotal, all three
+  emails) and `b2b_order_approval_reason` (`{{depend comment}}` box, declined email); starter designs per email in
+  `view/adminhtml/email_designer/approval_{request,approved,rejected}.mjml`.
 - Template IDs follow core's config-path convention so the setting can offer the default:
   `tonyapps_b2borderapproval_{request,approved,rejected}` were renamed to
   `tonyapps_b2b_order_approval_email_{request,approved,rejected}_template`. Theme overrides keep working (they go by
@@ -110,6 +113,11 @@ vendor/bin/phpunit -c dev/tests/unit/phpunit.xml.dist app/code/Tonyapps/B2bOrder
 - Integration test: `Test/Integration/Model/ApprovalFlowTest.php` (run with Magento's integration PHPUnit config).
 
 ## Change history
+
+### 2026-11-13 Email Designer blocks and starter designs
+
+- Registered the items table and the rejection reason as Email Designer blocks and a starter design for each of the
+  three emails, a copy of the built-in template (see Configuration and ACL). No dependency on `Tonyapps_EmailDesigner`.
 
 ### 2026-11-09 email redesign
 

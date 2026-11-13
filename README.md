@@ -85,7 +85,8 @@ Then enable the feature and set the minimum subtotal (see below).
 Pick any template made in **Marketing › Email Templates**, or a design made with the
 [Email Designer](https://github.com/tonyappsorg/magento2-email-designer) (**Marketing › Communications › Email
 Designer**), in the Emails settings above (default and website scope). The built-in template is used until you pick
-another one.
+another one. A new design starts from a ready-made copy of the module's email, with the order table and the
+rejection reason as drag-and-drop blocks.
 
 ## For developers
 

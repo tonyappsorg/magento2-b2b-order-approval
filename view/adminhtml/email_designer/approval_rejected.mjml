@@ -1,0 +1,9 @@
+        <mj-text font-size="12px" font-weight="600" letter-spacing="1px" text-transform="uppercase" color="#e22626">{{trans "Order approval · Request #%id" id=$request_id}}</mj-text>
+        <mj-text font-size="24px" font-weight="600">{{trans "Your order request was declined"}}</mj-text>
+        <mj-text>{{trans "Hi %name, your company administrator did not approve this order." name=$buyer_name}}</mj-text>
+        <mj-raw ta-block="b2b_order_approval_reason"></mj-raw>
+        <mj-text font-weight="600">{{trans "Requested order"}}</mj-text>
+        <mj-raw ta-block="b2b_order_approval_items"></mj-raw>
+        <mj-button background-color="#1979c3" border-radius="3px" font-size="16px" font-weight="600" inner-padding="14px 32px" href="{{var checkout_url}}">{{trans "Review your cart"}}</mj-button>
+        <mj-divider border-width="1px" border-color="#e5e5e5"></mj-divider>
+        <mj-text font-size="12px" color="#999999">{{trans "You can change your cart and request approval again."}}</mj-text>
