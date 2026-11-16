@@ -2,7 +2,7 @@
 
 Read this before changing the module. Workspace-wide rules are in ../AGENTS.md.
 
-Package `tonyapps/module-b2b-order-approval` v0.1.0, proprietary. Depends on `Tonyapps_B2b` (company accounts).
+Package `tonyapps/module-b2b-order-approval` v0.1.0, GPL-3.0-or-later. Depends on `Tonyapps_B2b` (company accounts).
 
 ## Status
 
@@ -117,6 +117,8 @@ vendor/bin/phpunit -c dev/tests/unit/phpunit.xml.dist app/code/Tonyapps/B2bOrder
 
 ## Change history
 
+- **2026-11-16** — Released as free software under GPL-3.0-or-later (owner decision): `LICENSE` added,
+  `composer.json` license changed from `proprietary`, License section in the README.
 ### 2026-11-15 storefront links in admin-sent emails
 Built in an admin request (including the Email Designer preview), `approval_url` and `checkout_url` came out as an admin link with a secret key, because `Store::getUrl()` uses the area's `UrlInterface`. `Notifier` now builds storefront links with its own non-shared `Magento\Framework\Url` (`frontendUrl`, `etc/di.xml`) scoped to the email's store; tests in `NotifierTest`.
 
