@@ -2,7 +2,7 @@
 
 Read this before changing the module. Workspace-wide rules are in ../AGENTS.md.
 
-Package `tonyapps/module-b2b-order-approval` v0.1.0, GPL-3.0-or-later. Depends on `Tonyapps_B2b` (company accounts).
+Package `tonyapps/module-b2b-order-approval` 1.0.0, GPL-3.0-or-later. Depends on `Tonyapps_B2b` (company accounts).
 
 ## Status
 
