@@ -87,6 +87,7 @@ Pick any template made in **Marketing › Email Templates**, or a design made wi
 Designer**), in the Emails settings above (default and website scope). The built-in template is used until you pick
 another one. A new design starts from a ready-made copy of the module's email, with the order table and the
 rejection reason as drag-and-drop blocks.
+The designer can preview and test-send the design with a real approval request from your store.
 
 ## For developers
 

@@ -82,6 +82,9 @@ Indexes: (`quote_id`, `status`), (`company_id`, `status`). No FKs. No payment da
 - Email Designer (`etc/di.xml`, `BlockPool`): block `b2b_order_approval_items` (cart table + subtotal, all three
   emails) and `b2b_order_approval_reason` (`{{depend comment}}` box, declined email); starter designs per email in
   `view/adminhtml/email_designer/approval_{request,approved,rejected}.mjml`.
+- Email Designer real-data preview (`etc/di.xml`, `PreviewPool`): `Model\EmailPreview` offers recent approval requests
+  (approved email: approved/ordered requests, rejected email: rejected ones, falling back to any request); variables
+  come from `Notifier::getVariables()`, which the notifier itself sends. `getStoreId()` returns the store it is sent from. Read-only.
 - Template IDs follow core's config-path convention so the setting can offer the default:
   `tonyapps_b2borderapproval_{request,approved,rejected}` were renamed to
   `tonyapps_b2b_order_approval_email_{request,approved,rejected}_template`. Theme overrides keep working (they go by
@@ -108,11 +111,20 @@ Indexes: (`quote_id`, `status`), (`company_id`, `status`). No FKs. No payment da
 vendor/bin/phpunit -c dev/tests/unit/phpunit.xml.dist app/code/Tonyapps/B2bOrderApproval/Test/Unit
 ```
 
-- Unit tests cover blocks, `ApprovalService`, `CartFingerprint`, `Notifier`, `OrderApprovalPolicy`, the resource
+- Unit tests cover blocks, `ApprovalService`, `CartFingerprint`, `Notifier`, `EmailPreview`, `OrderApprovalPolicy`, the resource
   model, observers, plugins, account-page layout and email templates.
 - Integration test: `Test/Integration/Model/ApprovalFlowTest.php` (run with Magento's integration PHPUnit config).
 
 ## Change history
+
+### 2026-11-15 storefront links in admin-sent emails
+Built in an admin request (including the Email Designer preview), `approval_url` and `checkout_url` came out as an admin link with a secret key, because `Store::getUrl()` uses the area's `UrlInterface`. `Notifier` now builds storefront links with its own non-shared `Magento\Framework\Url` (`frontendUrl`, `etc/di.xml`) scoped to the email's store; tests in `NotifierTest`.
+
+### 2026-11-15 Email Designer real-data preview
+
+- Added `Model\EmailPreview` for the Email Designer's real-data preview and test send of the three approval emails.
+The notifier's variables and recipient are built in one place (`compose()`), exposed as `Notifier::getVariables()`;
+sending unchanged.
 
 ### 2026-11-13 Email Designer blocks and starter designs
 

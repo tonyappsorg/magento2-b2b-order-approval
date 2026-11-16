@@ -10,6 +10,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Mail\Template\TransportBuilder;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\Mail\TransportInterface;
+use Magento\Framework\Url;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\TestCase;
@@ -33,7 +34,8 @@ class NotifierTest extends TestCase
             $this->createMock(TransportBuilder::class),
             $this->createMock(StoreManagerInterface::class),
             $this->createMock(LoggerInterface::class),
-            $this->createMock(ScopeConfigInterface::class)
+            $this->createMock(ScopeConfigInterface::class),
+            $this->createMock(Url::class)
         );
 
         $notifier->approved(7);
@@ -62,7 +64,12 @@ class NotifierTest extends TestCase
         $customers = $this->createMock(CustomerRepositoryInterface::class);
         $customers->method('getById')->with(3)->willReturn($admin);
         $store = $this->createMock(Store::class);
-        $store->method('getUrl')->willReturn('https://shop/approvals');
+        $store->expects(self::never())->method('getUrl');
+        $frontendUrl = $this->createMock(Url::class);
+        $frontendUrl->expects(self::once())->method('setScope')->with(1)->willReturnSelf();
+        $frontendUrl->expects(self::once())->method('getUrl')
+            ->with('b2borderapproval/approval/index', ['_nosid' => true])
+            ->willReturn('https://shop/b2borderapproval/approval/index/');
         $currency = $this->createMock(Currency::class);
         $currency->method('format')->willReturnCallback(static fn(float $amount) => '$' . number_format($amount, 2));
         $store->method('getBaseCurrency')->willReturn($currency);
@@ -87,17 +94,50 @@ class NotifierTest extends TestCase
             ->with('tonyapps_b2b_order_approval/email/request_template', ScopeInterface::SCOPE_STORE, 1)
             ->willReturn('12');
 
-        (new Notifier($requests, $companies, $customers, $builder, $storeManager, $this->createMock(LoggerInterface::class), $scopeConfig))
+        (new Notifier($requests, $companies, $customers, $builder, $storeManager, $this->createMock(LoggerInterface::class), $scopeConfig, $frontendUrl))
             ->requestSubmitted(7);
 
         self::assertSame('Ada Admin', $vars['admin_name']);
         self::assertSame("O'Brien & Co", $vars['company_name']);
         self::assertSame("Pat O'Brien", $vars['buyer_name']);
+        self::assertSame('https://shop/b2borderapproval/approval/index/', $vars['approval_url']);
         // The requested cart, for the email's item table.
         self::assertSame('$118.00', $vars['subtotal']);
         self::assertSame([
             ['name' => 'Fusion Backpack', 'sku' => '24-MB02', 'qty' => '2', 'total' => '$118.00'],
             ['name' => 'Affirm Water Bottle', 'sku' => '24-UG06', 'qty' => '1', 'total' => 'Free'],
         ], $vars['items']);
+    }
+
+    public function testDecisionEmailLinksToTheStorefrontCartOfTheRequestsStore(): void
+    {
+        $currency = $this->createMock(Currency::class);
+        $currency->method('format')->willReturn('$0.00');
+        $store = $this->createMock(Store::class);
+        $store->method('getBaseCurrency')->willReturn($currency);
+        $store->expects(self::never())->method('getUrl');
+        $storeManager = $this->createMock(StoreManagerInterface::class);
+        $storeManager->method('getStore')->willReturn($store);
+        // Decisions are often made in the admin, where UrlInterface would give an admin link.
+        $frontendUrl = $this->createMock(Url::class);
+        $frontendUrl->expects(self::once())->method('setScope')->with(2)->willReturnSelf();
+        $frontendUrl->expects(self::once())->method('getUrl')
+            ->with('checkout/cart', ['_nosid' => true])
+            ->willReturn('https://shop/checkout/cart/');
+
+        $vars = (new Notifier(
+            $this->createMock(ApprovalRequest::class),
+            $this->createMock(CompanyRepositoryInterface::class),
+            $this->createMock(CustomerRepositoryInterface::class),
+            $this->createMock(TransportBuilder::class),
+            $storeManager,
+            $this->createMock(LoggerInterface::class),
+            $this->createMock(ScopeConfigInterface::class),
+            $frontendUrl
+        ))->getVariables('approved', [
+            'entity_id' => 7, 'store_id' => 2, 'requester_name' => 'Pat', 'requester_email' => 'pat@example.com',
+        ]);
+
+        self::assertSame('https://shop/checkout/cart/', $vars['checkout_url']);
     }
 }
