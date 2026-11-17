@@ -2,12 +2,13 @@
 
 Read this before changing the module. Workspace-wide rules are in ../AGENTS.md.
 
-Package `tonyapps/module-b2b-order-approval` 1.0.0, GPL-3.0-or-later. Depends on `Tonyapps_B2b` (company accounts).
+Package `tonyapps/module-b2b-order-approval` 1.0.1, GPL-3.0-or-later. Depends on `Tonyapps_B2b` (company accounts).
 
 ## Status
 
 - First release built: optional storefront order approval for Tonyapps_B2b company accounts.
 - 2026-10-30 review fixes, 2026-11-09 QA fixes and 2026-11-09 email redesign applied (see Change history).
+- **Hyvä storefront styling verified 2026-11-17:** cart approval action and request queue use Hyvä button and table styles.
 
 ## Architecture
 
@@ -116,6 +117,10 @@ vendor/bin/phpunit -c dev/tests/unit/phpunit.xml.dist app/code/Tonyapps/B2bOrder
 - Integration test: `Test/Integration/Model/ApprovalFlowTest.php` (run with Magento's integration PHPUnit config).
 
 ## Change history
+
+- **2026-11-17 — Hyvä storefront styling:** Added Hyvä button classes to approval actions and the cart request button;
+  added responsive table styling matching the Hyvä My Orders card and zebra rows, and registered template sources for
+  Tailwind. Covered by computed-style assertions in `e2e/tests/hyva-b2b-styling.spec.js`.
 
 - **2026-11-16** — Released as free software under GPL-3.0-or-later (owner decision): `LICENSE` added,
   `composer.json` license changed from `proprietary`, License section in the README.

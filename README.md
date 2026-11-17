@@ -57,6 +57,8 @@ Emails as sent (Luma theme, 2026-11-09). Source images are in `docs/emails/`.
 - Approval happens before checkout, not after the order is placed: there is no purchase-order status in the
   Magento admin.
 - Requires the Tonyapps B2B module; the feature applies only to customers who belong to an active company.
+- The cart action and approval request page support Luma and Hyvä storefronts. Checkout uses the store's configured
+  checkout integration.
 
 ## Requirements
 

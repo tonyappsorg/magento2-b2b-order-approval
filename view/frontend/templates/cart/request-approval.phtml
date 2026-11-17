@@ -7,7 +7,7 @@
         <p><?= $escaper->escapeHtml(__('This order needs approval from your company administrator before checkout.')) ?></p>
         <form action="<?= $escaper->escapeUrl($block->getSubmitUrl()) ?>" method="post">
             <?= $block->getBlockHtml('formkey') ?>
-            <button type="submit" class="action primary">
+            <button type="submit" class="action primary btn btn-primary">
                 <span><?= $escaper->escapeHtml(__('Request Order Approval')) ?></span>
             </button>
         </form>

@@ -1,0 +1,21 @@
+@source "../templates/**/*.phtml";
+
+.b2b-order-approval-requests .b2b-table-wrapper {
+    @apply overflow-x-auto;
+}
+
+.b2b-order-approval-requests table.data.table {
+    @apply min-w-full border-collapse text-left;
+}
+
+.b2b-order-approval-requests table.data.table th {
+    @apply whitespace-nowrap px-2 py-2 text-left text-sm font-semibold;
+}
+
+.b2b-order-approval-requests table.data.table td {
+    @apply px-2 py-2 align-top;
+}
+
+.b2b-order-approval-requests table.data.table tbody tr:nth-child(even) {
+    @apply bg-gray-100;
+}

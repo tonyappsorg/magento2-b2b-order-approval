@@ -6,7 +6,8 @@ $requests = $block->getRequests();
 <div class="b2b-order-approval-requests">
     <p><?= $escaper->escapeHtml(__('Review requests from members of your company. Approving a request lets the buyer complete checkout; it does not place or pay for the order.')) ?></p>
     <?php if ($requests): ?>
-        <table class="data table">
+        <div class="b2b-table-wrapper card mb-4">
+        <table class="data table w-full">
             <thead><tr>
                 <th><?= $escaper->escapeHtml(__('Request')) ?></th>
                 <th><?= $escaper->escapeHtml(__('Buyer')) ?></th>
@@ -36,13 +37,13 @@ $requests = $block->getRequests();
                             <form action="<?= $escaper->escapeUrl($block->getApproveUrl()) ?>" method="post" style="display:inline">
                                 <?= $block->getBlockHtml('formkey') ?>
                                 <input type="hidden" name="request_id" value="<?= (int)$row['entity_id'] ?>"/>
-                                <button type="submit" class="action primary"><span><?= $escaper->escapeHtml(__('Approve')) ?></span></button>
+                                <button type="submit" class="action primary btn btn-primary"><span><?= $escaper->escapeHtml(__('Approve')) ?></span></button>
                             </form>
                             <form action="<?= $escaper->escapeUrl($block->getRejectUrl()) ?>" method="post" style="display:inline">
                                 <?= $block->getBlockHtml('formkey') ?>
                                 <input type="hidden" name="request_id" value="<?= (int)$row['entity_id'] ?>"/>
-                                <input type="text" name="comment" maxlength="2000" aria-label="<?= $escaper->escapeHtmlAttr(__('Reason for rejection')) ?>" placeholder="<?= $escaper->escapeHtmlAttr(__('Optional reason')) ?>"/>
-                                <button type="submit" class="action secondary"><span><?= $escaper->escapeHtml(__('Reject')) ?></span></button>
+                                <input type="text" name="comment" class="form-input" maxlength="2000" aria-label="<?= $escaper->escapeHtmlAttr(__('Reason for rejection')) ?>" placeholder="<?= $escaper->escapeHtmlAttr(__('Optional reason')) ?>"/>
+                                <button type="submit" class="action secondary btn btn-secondary"><span><?= $escaper->escapeHtml(__('Reject')) ?></span></button>
                             </form>
                         <?php elseif ($row['status'] === \Tonyapps\B2bOrderApproval\Model\ResourceModel\ApprovalRequest::REJECTED && $row['comment']): ?>
                             <?= $escaper->escapeHtml($row['comment']) ?>
@@ -54,13 +55,14 @@ $requests = $block->getRequests();
             <?php endforeach; ?>
             </tbody>
         </table>
+        </div>
         <?php if ($block->getPreviousPageUrl() || $block->getNextPageUrl()): ?>
             <div class="actions-toolbar">
                 <?php if ($url = $block->getPreviousPageUrl()): ?>
-                    <a class="action previous" href="<?= $escaper->escapeUrl($url) ?>"><?= $escaper->escapeHtml(__('Previous')) ?></a>
+                    <a class="action previous btn btn-secondary" href="<?= $escaper->escapeUrl($url) ?>"><?= $escaper->escapeHtml(__('Previous')) ?></a>
                 <?php endif; ?>
                 <?php if ($url = $block->getNextPageUrl()): ?>
-                    <a class="action next" href="<?= $escaper->escapeUrl($url) ?>"><?= $escaper->escapeHtml(__('Next')) ?></a>
+                    <a class="action next btn btn-secondary" href="<?= $escaper->escapeUrl($url) ?>"><?= $escaper->escapeHtml(__('Next')) ?></a>
                 <?php endif; ?>
             </div>
         <?php endif; ?>
